@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
-
-	"github.com/vulcand/oxy/forward"
 )
 
 //TODO:
@@ -94,7 +92,7 @@ func (b *Balancer) nextServer() (*url.URL, error) {
 }
 
 //NewBalancer gives a new balancer back
-func NewBalancer(balancees []string, randomInt RandomInt, choices int) *Balancer {
+func NewBalancer(balancees []string, randomInt RandomInt, choices int, next http.Handler) *Balancer {
 	var b = Balancer{
 		lock: &sync.Mutex{},
 	}
@@ -106,7 +104,7 @@ func NewBalancer(balancees []string, randomInt RandomInt, choices int) *Balancer
 	}
 	b.randomGenerator = randomInt
 	b.choices = choices
-	b.next, _ = forward.New()
+	b.next = next
 	return &b
 }
 
