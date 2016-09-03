@@ -36,7 +36,6 @@ function handleRequest(request, response){
   }
   response.end('huh');
 }
-
 //Create a server
 var server = http.createServer(handleRequest);
 
@@ -45,3 +44,8 @@ server.listen(PORT, function(){
     //Callback triggered when server is successfully listening. Hurray!
     console.log("Server listening on: http://localhost:%s", PORT);
 });
+
+//baseline:
+//ab -c 50 -n 1000 http://localhost:8090/asdf
+//12.098s total, 577ms mean
+//7236K consumed
