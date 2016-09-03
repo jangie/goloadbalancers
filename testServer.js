@@ -10,7 +10,7 @@ function handleRequest(request, response){
   console.dir(map);
   var inUrl = request.url;
 
-  if (inUrl === '/asdf') {
+  if (inUrl === '/simulateServers') {
     host = request.headers['host'];
     if (host === 'testa:8080'){
       setTimeout(function() {
@@ -46,6 +46,6 @@ server.listen(PORT, function(){
 });
 
 //baseline:
-//ab -c 50 -n 1000 http://localhost:8090/asdf
+//ab -c 50 -n 1000 http://localhost:8090/simulateServers
 //12.098s total, 577ms mean
 //7236K consumed
