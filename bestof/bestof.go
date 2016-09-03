@@ -25,7 +25,7 @@ import (
 
 //Balancer is a bookkeeping struct
 type Balancer struct {
-	balancees       map[*url.URL]Semaphore
+	balancees       map[*url.URL]int
 	randomGenerator RandomInt
 	next            http.Handler
 	choices         int
@@ -81,12 +81,12 @@ func (b *Balancer) nextServer() (*url.URL, error) {
 	fmt.Print(potentialChoices)
 	for _, key := range potentialChoices {
 		if leastConns == -1 {
-			leastConns = b.balancees[key].length()
+			leastConns = b.balancees[key]
 			bestChoice = key
 			continue
 		}
-		if leastConns > b.balancees[key].length() {
-			leastConns = b.balancees[key].length()
+		if leastConns > b.balancees[key] {
+			leastConns = b.balancees[key]
 			bestChoice = key
 		}
 	}
@@ -98,11 +98,11 @@ func NewBalancer(balancees []string, randomInt RandomInt, choices int) *Balancer
 	var b = Balancer{
 		lock: &sync.Mutex{},
 	}
-	b.balancees = make(map[*url.URL]Semaphore)
+	b.balancees = make(map[*url.URL]int)
 	for _, u := range balancees {
 		var purl, _ = url.Parse(u)
 		b.keys = append(b.keys, purl)
-		b.balancees[purl] = make(Semaphore, 100000)
+		b.balancees[purl] = 0
 	}
 	b.randomGenerator = randomInt
 	b.choices = choices
@@ -111,11 +111,15 @@ func NewBalancer(balancees []string, randomInt RandomInt, choices int) *Balancer
 }
 
 func (b *Balancer) acquire(u *url.URL) {
-	b.balancees[u].addToQueue()
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	b.balancees[u]++
 }
 
 func (b *Balancer) release(u *url.URL) {
-	b.balancees[u].removeFromQueue()
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	b.balancees[u]--
 }
 
 func (b *Balancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
