@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"sync"
+
+	"github.com/vulcand/oxy/forward"
 )
 
 //TODO:
@@ -22,11 +25,12 @@ import (
 
 //Balancer is a bookkeeping struct
 type Balancer struct {
-	balancees       map[url.URL]Semaphore
+	balancees       map[*url.URL]Semaphore
 	randomGenerator RandomInt
 	next            http.Handler
 	choices         int
-	keys            []url.URL
+	keys            []*url.URL
+	lock            *sync.Mutex
 }
 
 //constructor must:
@@ -34,6 +38,9 @@ type Balancer struct {
 //- set up randomGenerator to choose between 0 and
 
 func (b *Balancer) nextServer() (*url.URL, error) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
 	//Special case: If balancees are nil or empty, return an error.
 	if b.balancees == nil || len(b.balancees) == 0 {
 		return nil, fmt.Errorf("Number of balancees is zero, cannot handle")
@@ -41,7 +48,7 @@ func (b *Balancer) nextServer() (*url.URL, error) {
 	//Special case: If balancees is 1, there is no need to balance
 	if len(b.balancees) == 1 {
 		for key := range b.balancees {
-			return &key, nil
+			return key, nil
 		}
 	}
 	var normalizedChoices = b.choices
@@ -53,7 +60,7 @@ func (b *Balancer) nextServer() (*url.URL, error) {
 	if normalizedChoices > len(b.balancees) {
 		normalizedChoices = len(b.balancees)
 	}
-	var potentialChoices = []url.URL{}
+	var potentialChoices = []*url.URL{}
 
 	//shuffle keys, we'll choose the first N from the shuffled result
 	for i := range b.keys {
@@ -71,16 +78,51 @@ func (b *Balancer) nextServer() (*url.URL, error) {
 
 	var bestChoice *url.URL
 	var leastConns = -1
+	fmt.Print(potentialChoices)
 	for _, key := range potentialChoices {
 		if leastConns == -1 {
 			leastConns = b.balancees[key].length()
-			bestChoice = &key
+			bestChoice = key
 			continue
 		}
 		if leastConns > b.balancees[key].length() {
 			leastConns = b.balancees[key].length()
-			bestChoice = &key
+			bestChoice = key
 		}
 	}
 	return bestChoice, nil
+}
+
+//NewBalancer gives a new balancer back
+func NewBalancer(balancees []string, randomInt RandomInt, choices int) *Balancer {
+	var b = Balancer{
+		lock: &sync.Mutex{},
+	}
+	b.balancees = make(map[*url.URL]Semaphore)
+	for _, u := range balancees {
+		var purl, _ = url.Parse(u)
+		b.keys = append(b.keys, purl)
+		b.balancees[purl] = make(Semaphore, 100000)
+	}
+	b.randomGenerator = randomInt
+	b.choices = choices
+	b.next, _ = forward.New()
+	return &b
+}
+
+func (b *Balancer) acquire(u *url.URL) {
+	b.balancees[u].addToQueue()
+}
+
+func (b *Balancer) release(u *url.URL) {
+	b.balancees[u].removeFromQueue()
+}
+
+func (b *Balancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	var next, _ = b.nextServer()
+	newReq := *req
+	newReq.URL = next
+	b.acquire(next)
+	b.next.ServeHTTP(w, &newReq)
+	b.release(next)
 }

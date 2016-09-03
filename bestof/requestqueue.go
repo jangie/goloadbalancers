@@ -1,14 +1,15 @@
 package bestof
 
-//Request represents an outstanding request
-type Request struct{}
+//request represents an outstanding request
+type request struct{}
 
 //Semaphore holds onto the number of outstanding items in a queue
-type Semaphore chan Request
+type Semaphore chan request
 
 //Add a request counter to the queue of work for a backend
 func (s Semaphore) addToQueue() {
-	r := Request{}
+
+	r := request{}
 	s <- r
 }
 
@@ -19,5 +20,5 @@ func (s Semaphore) removeFromQueue() {
 
 //Check the length of the queue of work for a backend
 func (s Semaphore) length() int {
-	return s.length()
+	return len(s)
 }

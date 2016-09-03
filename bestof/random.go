@@ -32,6 +32,8 @@ func (g GoRandom) nextInt(minimum int, maximum int) (int, error) {
 }
 
 func (t *TestingRandom) nextInt(minimum int, maximum int) (int, error) {
+	//return 4, nil
+
 	if len(t.values) == 0 {
 		return 0, nil
 	}
