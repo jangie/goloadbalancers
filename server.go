@@ -23,10 +23,12 @@ func (t *testHarness) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func main() {
 	var fwd, _ = forward.New()
-	var bal = bestof.NewBalancer(
+	var bal = bestof.NewChoiceOfBalancer(
 		[]string{"http://testa:8080", "http://testb:8080", "http://testc:8080"},
-		bestof.GoRandom{},
-		2,
+		bestof.ChoiceOfBalancerOptions{
+			Choices:         2,
+			RandomGenerator: bestof.GoRandom{},
+		},
 		fwd,
 	)
 	var t = testHarness{

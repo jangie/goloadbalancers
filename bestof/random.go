@@ -16,8 +16,9 @@ type GoRandom struct {
 
 //TestingRandom gives the next value in its array as it's 'nextInt', looping back to the first on reaching the end
 type TestingRandom struct {
-	values []int
-	index  int
+	Values    []int
+	index     int
+	CallCount int
 }
 
 func (g GoRandom) nextInt(minimum int, maximum int) (int, error) {
@@ -33,16 +34,17 @@ func (g GoRandom) nextInt(minimum int, maximum int) (int, error) {
 
 func (t *TestingRandom) nextInt(minimum int, maximum int) (int, error) {
 	//return 4, nil
+	t.CallCount++
 
-	if len(t.values) == 0 {
+	if len(t.Values) == 0 {
 		return 0, nil
 	}
 
-	if t.index > len(t.values)-1 {
+	if t.index > len(t.Values)-1 {
 		t.index = 0
 	}
 
-	var value = t.values[t.index]
+	var value = t.Values[t.index]
 	t.index++
 
 	return value, nil

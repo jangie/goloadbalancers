@@ -7,7 +7,6 @@ const PORT=8080;
 var map = {a: 0, b: 0, c: 0};
 //We need a function which handles requests and send response
 function handleRequest(request, response){
-  console.dir(map);
   var inUrl = request.url;
 
   if (inUrl === '/simulateServers') {
@@ -15,6 +14,7 @@ function handleRequest(request, response){
     if (host === 'testa:8080'){
       setTimeout(function() {
         map.a += 1;
+        console.dir(map);
         response.end('a');
       }, 1000);
       return;
@@ -22,6 +22,7 @@ function handleRequest(request, response){
     if (host === 'testb:8080') {
       setTimeout(function() {
         map.b += 1;
+        console.dir(map);
         response.end('b');
       }, 666);
       return;
@@ -29,6 +30,7 @@ function handleRequest(request, response){
     if (host === 'testc:8080') {
       setTimeout(function() {
         map.c += 1;
+        console.dir(map);
         response.end('c');
       }, 334);
       return;
@@ -49,3 +51,8 @@ server.listen(PORT, function(){
 //ab -c 50 -n 1000 http://localhost:8090/simulateServers
 //12.098s total, 577ms mean
 //7236K consumed
+
+//most recent edits
+//ab -c 50 -n 1000 http://localhost:8090/simulateServers
+//11.596s total, 561ms mean
+//7212K consumed

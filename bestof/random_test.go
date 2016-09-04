@@ -12,10 +12,10 @@ func TestGoRandomImplements(t *testing.T) {
 }
 
 func TestTestingRandom(t *testing.T) {
-	var random RandomInt
+
 	var values = []int{1, 3, 5}
-	random = &TestingRandom{
-		values: values,
+	var random = &TestingRandom{
+		Values: values,
 	}
 	var i = 0
 	for ; i < 100; i++ {
@@ -25,4 +25,8 @@ func TestTestingRandom(t *testing.T) {
 		}
 
 	}
+	if random.CallCount != 100 {
+		t.Fatalf("The testing random can't keep track of how many times it's been called!")
+	}
+
 }
