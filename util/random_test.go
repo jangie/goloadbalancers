@@ -1,4 +1,4 @@
-package bestof
+package util
 
 import "testing"
 

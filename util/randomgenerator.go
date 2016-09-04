@@ -1,4 +1,4 @@
-package bestof
+package util
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 
 //RandomInt gives a nextInt from its range which may or may not actually be random
 type RandomInt interface {
-	nextInt(minimum int, maximum int) (int, error)
+	NextInt(minimum int, maximum int) (int, error)
 }
 
 //GoRandom uses Go's internal random generator to return a random number between minimum and maximum
@@ -21,7 +21,7 @@ type TestingRandom struct {
 	CallCount int
 }
 
-func (g GoRandom) nextInt(minimum int, maximum int) (int, error) {
+func (g GoRandom) NextInt(minimum int, maximum int) (int, error) {
 	if maximum < minimum {
 		return 0, errors.New("Illegal state: Minimum is greater than maximum")
 	}
@@ -32,7 +32,7 @@ func (g GoRandom) nextInt(minimum int, maximum int) (int, error) {
 	return rand.Intn(n) + minimum, nil
 }
 
-func (t *TestingRandom) nextInt(minimum int, maximum int) (int, error) {
+func (t *TestingRandom) NextInt(minimum int, maximum int) (int, error) {
 	//return 4, nil
 	t.CallCount++
 

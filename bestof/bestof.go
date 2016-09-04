@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"reflect"
 	"sync"
+
+	"github.com/jangie/bestofnlb/util"
 )
 
 //ChoiceOfBalancer is a bookkeeping struct
@@ -14,7 +16,7 @@ type ChoiceOfBalancer struct {
 	highWatermark   map[url.URL]int
 	requestCounter  map[url.URL]int
 	isTesting       bool
-	randomGenerator RandomInt
+	randomGenerator util.RandomInt
 	next            http.Handler
 	choices         int
 	keys            []*url.URL
@@ -22,7 +24,7 @@ type ChoiceOfBalancer struct {
 }
 
 type ChoiceOfBalancerOptions struct {
-	RandomGenerator RandomInt
+	RandomGenerator util.RandomInt
 	Choices         int
 	IsTesting       bool
 }
@@ -58,7 +60,7 @@ func (b *ChoiceOfBalancer) nextServer() (*url.URL, error) {
 	} else {
 		//shuffle keys, we'll choose the first N from the shuffled result
 		for i := range keysCopy {
-			j, _ := b.randomGenerator.nextInt(0, i+1)
+			j, _ := b.randomGenerator.NextInt(0, i+1)
 			keysCopy[i], keysCopy[j] = keysCopy[j], keysCopy[i]
 		}
 		potentialChoices = keysCopy
@@ -99,7 +101,7 @@ func NewChoiceOfBalancer(balancees []string, options ChoiceOfBalancerOptions, ne
 		b.balancees[purl] = 0
 	}
 	if options.RandomGenerator == nil {
-		b.randomGenerator = &GoRandom{}
+		b.randomGenerator = &util.GoRandom{}
 	} else {
 		b.randomGenerator = options.RandomGenerator
 	}

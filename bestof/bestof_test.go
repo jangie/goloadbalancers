@@ -6,6 +6,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/jangie/bestofnlb/util"
 )
 
 type testHTTPResponseWriter struct {
@@ -91,7 +93,7 @@ func TestBestOfDefaults(t *testing.T) {
 }
 
 func TestBestOfWithOneBalanceeNeverRandomlyChooses(t *testing.T) {
-	var randomGenerator = &TestingRandom{
+	var randomGenerator = &util.TestingRandom{
 		Values: []int{0},
 	}
 	var handler = NewChoiceOfBalancer([]string{"http://a"}, ChoiceOfBalancerOptions{
@@ -105,7 +107,7 @@ func TestBestOfWithOneBalanceeNeverRandomlyChooses(t *testing.T) {
 }
 
 func TestBestOfWithThreeBalanceesAndTwoChoicesRandomlyChooses(t *testing.T) {
-	var randomGenerator = &TestingRandom{
+	var randomGenerator = &util.TestingRandom{
 		Values: []int{0},
 	}
 	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
@@ -120,7 +122,7 @@ func TestBestOfWithThreeBalanceesAndTwoChoicesRandomlyChooses(t *testing.T) {
 }
 
 func TestBestOfWithThreeBalanceesAndThreeChoicesDoesNotRandomlyChoose(t *testing.T) {
-	var randomGenerator = &TestingRandom{
+	var randomGenerator = &util.TestingRandom{
 		Values: []int{0},
 	}
 	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
@@ -140,7 +142,7 @@ func TestBestOfWithThreeBalanceesAndThreeChoicesDoesNotRandomlyChoose(t *testing
 // - #If N is equal to number of backends, fall back to JSQ, do not go through selection
 // - #If N is less than number of backends, randomly select N backends and choose the least loaded
 func TestPerformsJSQWhenBalanceesEqualNumberOfChoices(t *testing.T) {
-	var randomGenerator = &GoRandom{}
+	var randomGenerator = &util.GoRandom{}
 	var next = &testHTTPHandler{}
 	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
 		RandomGenerator: randomGenerator,
@@ -172,7 +174,7 @@ func TestPerformsJSQWhenBalanceesEqualNumberOfChoices(t *testing.T) {
 }
 
 func TestPerformsChooseJSQWhenBalanceesGreaterThanNumberOfChoices(t *testing.T) {
-	var randomGenerator = &TestingRandom{
+	var randomGenerator = &util.TestingRandom{
 		Values: []int{0, 1},
 	}
 	var next = &testHTTPHandler{}

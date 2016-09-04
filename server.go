@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/jangie/bestofnlb/bestof"
+	"github.com/jangie/bestofnlb/util"
 	"github.com/vulcand/oxy/forward"
 )
 
@@ -27,7 +28,7 @@ func main() {
 		[]string{"http://testa:8080", "http://testb:8080", "http://testc:8080"},
 		bestof.ChoiceOfBalancerOptions{
 			Choices:         2,
-			RandomGenerator: bestof.GoRandom{},
+			RandomGenerator: util.GoRandom{},
 		},
 		fwd,
 	)
