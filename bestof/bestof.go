@@ -76,9 +76,6 @@ func (b *ChoiceOfBalancer) nextServer() (*url.URL, error) {
 	} else {
 		//shuffle keys, we'll choose the first N from the shuffled result
 		for i := range keysCopy {
-			if i > normalizedChoices {
-				break
-			}
 			j, _ := b.randomGenerator.nextInt(0, i+1)
 			keysCopy[i], keysCopy[j] = keysCopy[j], keysCopy[i]
 		}
