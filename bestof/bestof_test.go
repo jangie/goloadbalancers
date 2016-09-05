@@ -87,7 +87,7 @@ func TestBestOfDefaults(t *testing.T) {
 	if handler.ConfiguredChoices() != 2 {
 		t.Fatalf("Configured Choices should default to 2 if not provided")
 	}
-	if handler.ConfiguredRandomInt() != "*bestof.GoRandom" {
+	if handler.ConfiguredRandomInt() != "*util.GoRandom" {
 		t.Fatalf("Configured random generator should default to GoRandom if not provided, was %s", handler.ConfiguredRandomInt())
 	}
 }

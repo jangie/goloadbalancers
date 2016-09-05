@@ -148,6 +148,7 @@ func (b *ChoiceOfBalancer) HighWatermark(u *url.URL) int {
 	return b.highWatermark[*u]
 }
 
+//RequestCount gives back the number of requests that have come into a particular URL
 func (b *ChoiceOfBalancer) RequestCount(u *url.URL) int {
 	return b.requestCounter[*u]
 }
@@ -179,7 +180,7 @@ func (b *ChoiceOfBalancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if b.next != nil {
 		b.next.ServeHTTP(w, &newReq)
 	} else {
-		fmt.Fprint(w, "bestofnlb does not have a proxy middleware next and is unable to forward to the balancee.")
+		fmt.Fprint(w, "bestofnlb does not have a next middleware and is unable to forward to the balancee.")
 	}
 	b.release(next)
 }
