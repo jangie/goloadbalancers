@@ -104,7 +104,7 @@ func main() {
 	go http.ListenAndServe(":8092", getJSQHarness(balancees, fwd))
 
 	go http.ListenAndServe(":8095", getRoundRobinHarness(balancees, fwd))
+	go http.ListenAndServe(":8096", getDynamicRoundRobinHarness(balancees, fwd))
 	fmt.Print("Listening on:\n - http://localhost:8090 [bestof lb]\n - http://localhost:8091 [random lb]\n - http://localhost:8092 [jsq lb]\n - http://localhost:8095 [vulcand/oxy (external) roundrobin]\n - http://localhost:8096 [vulcand/oxy (external) dynamic roundrobin]\n")
-	http.ListenAndServe(":8096", getDynamicRoundRobinHarness(balancees, fwd))
-
+	select {}
 }
