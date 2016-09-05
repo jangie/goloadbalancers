@@ -1,0 +1,5 @@
+package: github.com/jangie/goloadbalancers
+import:
+- package: github.com/vulcand/oxy
+  subpackages:
+  - forward
