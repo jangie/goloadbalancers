@@ -2,6 +2,9 @@
 
 A couple of go [http.Handler](https://golang.org/pkg/net/http/#Handler)
 middleware implementing various load balancing algorithms.
+[vulcand's oxy](https://github.com/vulcand/oxy) does a great job with roundrobin
+and a dynamic roundrobin, and also a request proxy mechanism, so do take a look at
+that repository as well.
 
 To play with the toy test server:
  - Get glide (https://github.com/Masterminds/glide) on your local
@@ -11,7 +14,7 @@ To play with the toy test server:
  - Set your hosts file to include testa, testb, testc, pointing at your localhost
  - `./goloadbalancers`
  - [separate terminal] `node testServer.js`
- 
+
 ##random
 Choose randomly between a set of balancees.
 
