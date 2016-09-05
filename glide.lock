@@ -1,5 +1,5 @@
 hash: edf8c0d37e50fdfc052638786744caf20c1c23825f9e777fda6f3a2259cc94f0
-updated: 2016-09-04T20:39:00.207313336-04:00
+updated: 2016-09-04T21:09:01.050916531-04:00
 imports:
 - name: github.com/codahale/hdrhistogram
   version: f8ad88b59a584afeee9d334eff879b104439117b

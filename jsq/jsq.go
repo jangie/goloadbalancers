@@ -4,28 +4,22 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"reflect"
 	"sync"
-
-	"github.com/jangie/goloadbalancers/util"
 )
 
 //JoinShortestQueueBalancer is a bookkeeping struct
 type JoinShortestQueueBalancer struct {
-	balancees       map[*url.URL]int
-	highWatermark   map[url.URL]int
-	requestCounter  map[url.URL]int
-	isTesting       bool
-	randomGenerator util.RandomInt
-	next            http.Handler
-	keys            []*url.URL
-	lock            *sync.Mutex
+	balancees      map[*url.URL]int
+	highWatermark  map[url.URL]int
+	requestCounter map[url.URL]int
+	isTesting      bool
+	next           http.Handler
+	keys           []*url.URL
+	lock           *sync.Mutex
 }
 
 type JoinShortestQueueBalancerOptions struct {
-	RandomGenerator util.RandomInt
-	Choices         int
-	IsTesting       bool
+	IsTesting bool
 }
 
 func (b *JoinShortestQueueBalancer) nextServer() (*url.URL, error) {
@@ -75,11 +69,6 @@ func NewJoinShortestQueueBalancer(balancees []string, options JoinShortestQueueB
 		b.keys = append(b.keys, purl)
 		b.balancees[purl] = 0
 	}
-	if options.RandomGenerator == nil {
-		b.randomGenerator = &util.GoRandom{}
-	} else {
-		b.randomGenerator = options.RandomGenerator
-	}
 
 	b.next = next
 	return &b
@@ -121,11 +110,6 @@ func (b *JoinShortestQueueBalancer) HighWatermark(u *url.URL) int {
 //RequestCount gives back the number of requests that have come into a particular URL
 func (b *JoinShortestQueueBalancer) RequestCount(u *url.URL) int {
 	return b.requestCounter[*u]
-}
-
-//ConfiguredRandomInt returns the string representation of the random generator assigned to the balancee. Used for testing.
-func (b *JoinShortestQueueBalancer) ConfiguredRandomInt() string {
-	return reflect.TypeOf(b.randomGenerator).String()
 }
 
 func (b *JoinShortestQueueBalancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
