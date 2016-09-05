@@ -58,7 +58,7 @@ server.listen(PORT, function(){
 //7212K consumed
 
 //after removing incorrect optimization (which doesn't affect this test)
-//ab -c 50 -n 1000 http://localhost:8090/simulateServers
+//ab -c 50 -n 1000 http://localhost:<port>/simulateServers
 //bestofnlb:
 //11.548s total, 560ms mean
 //random:
