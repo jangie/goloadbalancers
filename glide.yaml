@@ -3,3 +3,4 @@ import:
 - package: github.com/vulcand/oxy
   subpackages:
   - forward
+  - roundrobin

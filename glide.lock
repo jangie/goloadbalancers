@@ -1,15 +1,26 @@
-hash: 882ded98171715c85e839c7947f2bc3df61678e1c47b6d14914f21b705e75ca5
-updated: 2016-09-04T20:31:40.287069861-04:00
+hash: edf8c0d37e50fdfc052638786744caf20c1c23825f9e777fda6f3a2259cc94f0
+updated: 2016-09-04T20:39:00.207313336-04:00
 imports:
+- name: github.com/codahale/hdrhistogram
+  version: f8ad88b59a584afeee9d334eff879b104439117b
+- name: github.com/mailgun/timetools
+  version: fd192d755b00c968d312d23f521eb0cdc6f66bd0
 - name: github.com/Sirupsen/logrus
   version: 3ec0642a7fb6488f65b06f9040adc67e3990296a
 - name: github.com/vulcand/oxy
   version: cf724ef3fc60a49914f76c6171e95ed1db6a5bf8
   subpackages:
   - forward
+  - roundrobin
   - utils
+  - memmetrics
 - name: golang.org/x/sys
   version: a646d33e2ee3172a661fc09bca23bb4889a41bc8
   subpackages:
   - unix
+- name: gopkg.in/mgo.v2
+  version: 3f83fa5005286a7fe593b055f0d7771a7dce4655
+  subpackages:
+  - bson
+  - internal/json
 testImports: []

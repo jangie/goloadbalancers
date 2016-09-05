@@ -63,3 +63,5 @@ server.listen(PORT, function(){
 //11.548s total, 560ms mean
 //random:
 //14.417s total, 683ms mean
+//vulcand/oxy/roundrobin:
+//14.070s total, 670ms mean

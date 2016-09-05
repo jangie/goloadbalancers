@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/jangie/goloadbalancers/bestof"
 	"github.com/jangie/goloadbalancers/random"
 	"github.com/jangie/goloadbalancers/util"
 	"github.com/vulcand/oxy/forward"
+	"github.com/vulcand/oxy/roundrobin"
 )
 
 //Test harness
@@ -25,10 +27,9 @@ func (t *testHarness) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func main() {
-	var fwd, _ = forward.New()
+func getBestOfHarness(balancees []string, fwd http.Handler) *testHarness {
 	var bal = bestof.NewChoiceOfBalancer(
-		[]string{"http://testa:8080", "http://testb:8080", "http://testc:8080"},
+		balancees,
 		bestof.ChoiceOfBalancerOptions{
 			Choices:         2,
 			RandomGenerator: util.GoRandom{},
@@ -39,8 +40,11 @@ func main() {
 		next: bal,
 		port: 8090,
 	}
+	return &tbestof
+}
 
-	var random = random.NewRandomBalancer([]string{"http://testa:8080", "http://testb:8080", "http://testc:8080"},
+func getRandomHarness(balancees []string, fwd http.Handler) *testHarness {
+	var random = random.NewRandomBalancer(balancees,
 		random.RandomBalancerOptions{
 			RandomGenerator: util.GoRandom{},
 		},
@@ -50,9 +54,30 @@ func main() {
 		next: random,
 		port: 8091,
 	}
-	go http.ListenAndServe(":8090", &tbestof)
-	go http.ListenAndServe(":8091", &trandom)
-	fmt.Print("Listening on http://localhost:8090 [bestof lb] and http://localhost:8091 [random lb]\n\n")
+	return &trandom
+}
+
+func getRoundRobinHarness(balancees []string, fwd http.Handler) *testHarness {
+	var rr, _ = roundrobin.New(fwd)
+	var trr = testHarness{
+		next: rr,
+		port: 8092,
+	}
+	for _, u := range balancees {
+		var purl, _ = url.Parse(u)
+		rr.UpsertServer(purl)
+	}
+	return &trr
+}
+
+func main() {
+	var fwd, _ = forward.New()
+	var balancees = []string{"http://testa:8080", "http://testb:8080", "http://testc:8080"}
+
+	go http.ListenAndServe(":8090", getBestOfHarness(balancees, fwd))
+	go http.ListenAndServe(":8091", getRandomHarness(balancees, fwd))
+	go http.ListenAndServe(":8092", getRoundRobinHarness(balancees, fwd))
+	fmt.Print("Listening on:\n - http://localhost:8090 [bestof lb]\n - http://localhost:8091 [random lb]\n - http://localhost:8092 [vulcand/oxy (external) roundrobin]\n\n")
 	for true == true {
 		time.Sleep(1000)
 	}
