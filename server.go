@@ -70,6 +70,20 @@ func getRoundRobinHarness(balancees []string, fwd http.Handler) *testHarness {
 	return &trr
 }
 
+func getDynamicRoundRobinHarness(balancees []string, fwd http.Handler) *testHarness {
+	var rr, _ = roundrobin.New(fwd)
+	rebalancer, _ := roundrobin.NewRebalancer(rr)
+	for _, u := range balancees {
+		var purl, _ = url.Parse(u)
+		rr.UpsertServer(purl, roundrobin.Weight(5))
+	}
+	var tdrr = testHarness{
+		next: rebalancer,
+		port: 8092,
+	}
+	return &tdrr
+}
+
 func main() {
 	var fwd, _ = forward.New()
 	var balancees = []string{"http://testa:8080", "http://testb:8080", "http://testc:8080"}
@@ -77,7 +91,8 @@ func main() {
 	go http.ListenAndServe(":8090", getBestOfHarness(balancees, fwd))
 	go http.ListenAndServe(":8091", getRandomHarness(balancees, fwd))
 	go http.ListenAndServe(":8092", getRoundRobinHarness(balancees, fwd))
-	fmt.Print("Listening on:\n - http://localhost:8090 [bestof lb]\n - http://localhost:8091 [random lb]\n - http://localhost:8092 [vulcand/oxy (external) roundrobin]\n\n")
+	go http.ListenAndServe(":8093", getDynamicRoundRobinHarness(balancees, fwd))
+	fmt.Print("Listening on:\n - http://localhost:8090 [bestof lb]\n - http://localhost:8091 [random lb]\n - http://localhost:8092 [vulcand/oxy (external) roundrobin]\n - http://localhost:8093 [vulcand/oxy (external) dynamic roundrobin]\n")
 	for true == true {
 		time.Sleep(1000)
 	}
