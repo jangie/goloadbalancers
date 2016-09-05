@@ -31,8 +31,7 @@ func getBestOfHarness(balancees []string, fwd http.Handler) *testHarness {
 	var bal = bestof.NewChoiceOfBalancer(
 		balancees,
 		bestof.ChoiceOfBalancerOptions{
-			Choices:         2,
-			RandomGenerator: util.GoRandom{},
+			Choices: 2,
 		},
 		fwd,
 	)
