@@ -21,7 +21,7 @@ type testHarness struct {
 
 func (t *testHarness) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "/" {
-		fmt.Fprintf(w, "This is a dumb server which is meant to be used with the node file testServer.js.\n - Run the node server (which will hold onto :8080)\n - Add pointers into your hosts file for 127.0.0.1 testa, testb, testc\n - Hit localhost:%d/simulateServers, and see which server you get balanced to", t.port)
+		fmt.Fprintf(w, "This is a dumb server which is meant to be used with the node file testServer.js.\n - Run the node server (which will hold onto :8080)\n - Add pointers into your hosts file for 127.0.0.1 testa, testb, testc\n - Hit localhost:%d/simulateUnevenServers or localhost:%d/simulateServers, and see which server you get balanced to", t.port, t.port)
 	} else {
 		t.next.ServeHTTP(w, req)
 	}
