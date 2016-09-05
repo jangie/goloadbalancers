@@ -52,6 +52,7 @@ func main() {
 	}
 	go http.ListenAndServe(":8090", &tbestof)
 	go http.ListenAndServe(":8091", &trandom)
+	fmt.Print("Listening on http://localhost:8090 [bestof lb] and http://localhost:8091 [random lb]\n\n")
 	for true == true {
 		time.Sleep(1000)
 	}
