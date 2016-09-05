@@ -1,4 +1,11 @@
-# bestofnlb
+# goloadbalancers
+
+A couple of go http.Handler middleware implementing various load balancing algorithms
+
+##random
+Choose randomly between a set of balancees.
+
+##bestof
 After I attended a talk given by Tyler McMullen (it appears a video of another
 rendition of it is [here](https://www.youtube.com/watch?v=kpvbOzHUakA))
 I was inspired to write this bit of software up. The talk mentioned
