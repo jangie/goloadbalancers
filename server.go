@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jangie/goloadbalancers/bestof"
+	"github.com/jangie/goloadbalancers/jsq"
 	"github.com/jangie/goloadbalancers/random"
 	"github.com/jangie/goloadbalancers/util"
 	"github.com/vulcand/oxy/forward"
@@ -61,7 +62,7 @@ func getRoundRobinHarness(balancees []string, fwd http.Handler) *testHarness {
 	var rr, _ = roundrobin.New(fwd)
 	var trr = testHarness{
 		next: rr,
-		port: 8092,
+		port: 8095,
 	}
 	for _, u := range balancees {
 		var purl, _ = url.Parse(u)
@@ -79,9 +80,21 @@ func getDynamicRoundRobinHarness(balancees []string, fwd http.Handler) *testHarn
 	}
 	var tdrr = testHarness{
 		next: rebalancer,
-		port: 8092,
+		port: 8096,
 	}
 	return &tdrr
+}
+
+func getJSQHarness(balancees []string, fwd http.Handler) *testHarness {
+	var jsq = jsq.NewJoinShortestQueueBalancer(balancees,
+		jsq.JoinShortestQueueBalancerOptions{},
+		fwd,
+	)
+	var tjsq = testHarness{
+		next: jsq,
+		port: 8092,
+	}
+	return &tjsq
 }
 
 func main() {
@@ -90,9 +103,11 @@ func main() {
 
 	go http.ListenAndServe(":8090", getBestOfHarness(balancees, fwd))
 	go http.ListenAndServe(":8091", getRandomHarness(balancees, fwd))
-	go http.ListenAndServe(":8092", getRoundRobinHarness(balancees, fwd))
-	go http.ListenAndServe(":8093", getDynamicRoundRobinHarness(balancees, fwd))
-	fmt.Print("Listening on:\n - http://localhost:8090 [bestof lb]\n - http://localhost:8091 [random lb]\n - http://localhost:8092 [vulcand/oxy (external) roundrobin]\n - http://localhost:8093 [vulcand/oxy (external) dynamic roundrobin]\n")
+	go http.ListenAndServe(":8092", getJSQHarness(balancees, fwd))
+
+	go http.ListenAndServe(":8095", getRoundRobinHarness(balancees, fwd))
+	go http.ListenAndServe(":8096", getDynamicRoundRobinHarness(balancees, fwd))
+	fmt.Print("Listening on:\n - http://localhost:8090 [bestof lb]\n - http://localhost:8091 [random lb]\n - http://localhost:8092 [jsq lb]\n - http://localhost:8095 [vulcand/oxy (external) roundrobin]\n - http://localhost:8096 [vulcand/oxy (external) dynamic roundrobin]\n")
 	for true == true {
 		time.Sleep(1000)
 	}

@@ -6,6 +6,10 @@ middleware implementing various load balancing algorithms
 ##random
 Choose randomly between a set of balancees.
 
+##jsq (JoinShortestQueue)
+Choose from balancees the balancee with the currently lowest number of outstanding
+requests.
+
 ##bestof
 After I attended a talk given by Tyler McMullen (it appears a video of another
 rendition of it is [here](https://www.youtube.com/watch?v=kpvbOzHUakA))
