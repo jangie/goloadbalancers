@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/jangie/bestofnlb/util"
+	"github.com/jangie/goloadbalancers/util"
 )
 
 type testHTTPResponseWriter struct {

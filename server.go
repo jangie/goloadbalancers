@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jangie/bestofnlb/bestof"
-	"github.com/jangie/bestofnlb/random"
-	"github.com/jangie/bestofnlb/util"
+	"github.com/jangie/goloadbalancers/bestof"
+	"github.com/jangie/goloadbalancers/random"
+	"github.com/jangie/goloadbalancers/util"
 	"github.com/vulcand/oxy/forward"
 )
 

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"reflect"
 
-	"github.com/jangie/bestofnlb/util"
+	"github.com/jangie/goloadbalancers/util"
 )
 
 type RandomBalancer struct {

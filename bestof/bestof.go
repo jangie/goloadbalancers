@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/jangie/bestofnlb/util"
+	"github.com/jangie/goloadbalancers/util"
 )
 
 //ChoiceOfBalancer is a bookkeeping struct
