@@ -1,6 +1,7 @@
 # goloadbalancers
 
-A couple of go http.Handler middleware implementing various load balancing algorithms
+A couple of go [http.Handler](https://golang.org/pkg/net/http/#Handler)
+middleware implementing various load balancing algorithms
 
 ##random
 Choose randomly between a set of balancees.
