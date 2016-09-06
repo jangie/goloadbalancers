@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"sync"
 
 	"github.com/jangie/goloadbalancers/util"
 )
@@ -13,8 +14,9 @@ type RandomBalancer struct {
 	randomGenerator util.RandomInt
 	balancees       []*url.URL
 	next            http.Handler
-	requestCounter  map[url.URL]int
 	isTesting       bool
+	requestCounter  map[url.URL]int
+	lock            *sync.Mutex
 }
 
 type RandomBalancerOptions struct {
@@ -23,6 +25,8 @@ type RandomBalancerOptions struct {
 }
 
 func (b *RandomBalancer) nextServer() (*url.URL, error) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
 	if b.balancees == nil || len(b.balancees) == 0 {
 		return nil, fmt.Errorf("Number of balancees is zero, cannot handle")
 	}
@@ -95,4 +99,32 @@ func (b *RandomBalancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	} else {
 		fmt.Fprint(w, "random does not have a next middleware and is unable to forward to the balancee.")
 	}
+}
+
+//Add a url to the loadbalancer
+func (b *RandomBalancer) Add(u *url.URL) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	for _, key := range b.balancees {
+		if *key == *u {
+			//Looks like we already have this url.
+			return nil
+		}
+	}
+	b.balancees = append(b.balancees, u)
+	return nil
+}
+
+//Remove a url from the loadbalancer.
+func (b *RandomBalancer) Remove(u *url.URL) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	newbalancees := b.balancees[:0]
+	for _, x := range b.balancees {
+		if *x == *u {
+			newbalancees = append(newbalancees, x)
+		}
+	}
+	b.balancees = newbalancees
+	return nil
 }

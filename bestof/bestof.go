@@ -184,3 +184,37 @@ func (b *ChoiceOfBalancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 	b.release(next)
 }
+
+//Add a url to the loadbalancer
+func (b *ChoiceOfBalancer) Add(u *url.URL) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	for _, key := range b.keys {
+		if *key == *u {
+			//Looks like we already have this url.
+			return nil
+		}
+	}
+	b.keys = append(b.keys, u)
+	b.balancees[u] = 0
+	return nil
+}
+
+//Remove a url from the loadbalancer.
+func (b *ChoiceOfBalancer) Remove(u *url.URL) error {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+	newkeys := b.keys[:0]
+	for _, x := range b.keys {
+		if *x == *u {
+			newkeys = append(newkeys, x)
+		}
+	}
+	b.keys = newkeys
+	for key := range b.balancees {
+		if *key == *u {
+			delete(b.balancees, key)
+		}
+	}
+	return nil
+}

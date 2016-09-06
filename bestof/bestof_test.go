@@ -77,9 +77,9 @@ func (t *testRequestThrottler) releaseRequest() {
 }
 
 func TestBestOfImplements(t *testing.T) {
-	var handler http.Handler
-	handler = NewChoiceOfBalancer([]string{}, ChoiceOfBalancerOptions{}, nil)
-	handler.ServeHTTP(nil, nil)
+	var loadbalancer util.LoadBalancer
+	loadbalancer = NewChoiceOfBalancer([]string{}, ChoiceOfBalancerOptions{}, nil)
+	loadbalancer.ServeHTTP(nil, nil)
 }
 
 func TestBestOfDefaults(t *testing.T) {
