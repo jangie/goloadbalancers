@@ -60,7 +60,8 @@ func (b *ChoiceOfBalancer) nextServer() (*url.URL, error) {
 	} else {
 		//shuffle keys, we'll choose the first N from the shuffled result
 		for i := range keysCopy {
-			j, _ := b.randomGenerator.NextInt(0, i+1)
+			var j int
+			j, _ = b.randomGenerator.NextInt(0, i+1)
 			keysCopy[i], keysCopy[j] = keysCopy[j], keysCopy[i]
 		}
 		potentialChoices = keysCopy

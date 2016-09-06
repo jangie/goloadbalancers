@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 
+	_ "net/http/pprof"
+
 	"github.com/jangie/goloadbalancers/bestof"
 	"github.com/jangie/goloadbalancers/jsq"
 	"github.com/jangie/goloadbalancers/random"
@@ -98,6 +100,9 @@ func getJSQHarness(balancees []string, fwd http.Handler) *testHarness {
 func main() {
 	var fwd, _ = forward.New()
 	var balancees = []string{"http://testa:8080", "http://testb:8080", "http://testc:8080"}
+
+	//serve stats for profiling
+	go http.ListenAndServe(":8100", http.DefaultServeMux)
 
 	go http.ListenAndServe(":8090", getBestOfHarness(balancees, fwd))
 	go http.ListenAndServe(":8091", getRandomHarness(balancees, fwd))
