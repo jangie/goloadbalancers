@@ -10,6 +10,10 @@ import (
 	"github.com/jangie/goloadbalancers/util"
 )
 
+var urlA, _ = url.Parse("http://a")
+var urlB, _ = url.Parse("http://b")
+var urlC, _ = url.Parse("http://c")
+
 type testHTTPResponseWriter struct {
 	lock         *sync.Mutex
 	timesWritten int
@@ -78,12 +82,12 @@ func (t *testRequestThrottler) releaseRequest() {
 
 func TestBestOfImplements(t *testing.T) {
 	var loadbalancer util.LoadBalancer
-	loadbalancer = NewChoiceOfBalancer([]string{}, ChoiceOfBalancerOptions{}, nil)
+	loadbalancer = NewChoiceOfBalancer([]url.URL{}, ChoiceOfBalancerOptions{}, nil)
 	loadbalancer.ServeHTTP(nil, nil)
 }
 
 func TestBestOfDefaults(t *testing.T) {
-	var handler = NewChoiceOfBalancer([]string{}, ChoiceOfBalancerOptions{}, nil)
+	var handler = NewChoiceOfBalancer([]url.URL{}, ChoiceOfBalancerOptions{}, nil)
 	if handler.ConfiguredChoices() != 2 {
 		t.Fatalf("Configured Choices should default to 2 if not provided")
 	}
@@ -96,7 +100,7 @@ func TestBestOfWithOneBalanceeNeverRandomlyChooses(t *testing.T) {
 	var randomGenerator = &util.TestingRandom{
 		Values: []int{0},
 	}
-	var handler = NewChoiceOfBalancer([]string{"http://a"}, ChoiceOfBalancerOptions{
+	var handler = NewChoiceOfBalancer([]url.URL{*urlA}, ChoiceOfBalancerOptions{
 		RandomGenerator: randomGenerator,
 		IsTesting:       true,
 	}, nil)
@@ -110,11 +114,12 @@ func TestBestOfWithThreeBalanceesAndTwoChoicesRandomlyChooses(t *testing.T) {
 	var randomGenerator = &util.TestingRandom{
 		Values: []int{0},
 	}
-	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
+	var handler = NewChoiceOfBalancer([]url.URL{*urlA, *urlB, *urlC}, ChoiceOfBalancerOptions{
 		RandomGenerator: randomGenerator,
 		Choices:         2,
 		IsTesting:       true,
 	}, nil)
+
 	handler.ServeHTTP(&testHTTPResponseWriter{lock: &sync.Mutex{}}, &http.Request{})
 	if randomGenerator.CallCount == 0 {
 		t.Fatalf("Random generator should've been called! There are three balancees and two choices!")
@@ -125,7 +130,7 @@ func TestBestOfWithThreeBalanceesAndThreeChoicesDoesNotRandomlyChoose(t *testing
 	var randomGenerator = &util.TestingRandom{
 		Values: []int{0},
 	}
-	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
+	var handler = NewChoiceOfBalancer([]url.URL{*urlA, *urlB, *urlC}, ChoiceOfBalancerOptions{
 		RandomGenerator: randomGenerator,
 		Choices:         3,
 		IsTesting:       true,
@@ -144,7 +149,7 @@ func TestBestOfWithThreeBalanceesAndThreeChoicesDoesNotRandomlyChoose(t *testing
 func TestPerformsJSQWhenBalanceesEqualNumberOfChoices(t *testing.T) {
 	var randomGenerator = &util.GoRandom{}
 	var next = &testHTTPHandler{}
-	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
+	var handler = NewChoiceOfBalancer([]url.URL{*urlA, *urlB, *urlC}, ChoiceOfBalancerOptions{
 		RandomGenerator: randomGenerator,
 		Choices:         3,
 		IsTesting:       true,
@@ -178,7 +183,7 @@ func TestPerformsChooseJSQWhenBalanceesGreaterThanNumberOfChoices(t *testing.T) 
 		Values: []int{0, 1},
 	}
 	var next = &testHTTPHandler{}
-	var handler = NewChoiceOfBalancer([]string{"http://a", "http://b", "http://c"}, ChoiceOfBalancerOptions{
+	var handler = NewChoiceOfBalancer([]url.URL{*urlA, *urlB, *urlC}, ChoiceOfBalancerOptions{
 		RandomGenerator: randomGenerator,
 		Choices:         2,
 		IsTesting:       true,

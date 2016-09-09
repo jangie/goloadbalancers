@@ -55,7 +55,7 @@ func (b *JoinShortestQueueBalancer) nextServer() (*url.URL, error) {
 }
 
 //NewJoinShortestQueueBalancer gives a new ChoiceOfBalancer back
-func NewJoinShortestQueueBalancer(balancees []string, options JoinShortestQueueBalancerOptions, next http.Handler) *JoinShortestQueueBalancer {
+func NewJoinShortestQueueBalancer(balancees []url.URL, options JoinShortestQueueBalancerOptions, next http.Handler) *JoinShortestQueueBalancer {
 	var b = JoinShortestQueueBalancer{
 		lock: &sync.Mutex{},
 	}
@@ -64,10 +64,9 @@ func NewJoinShortestQueueBalancer(balancees []string, options JoinShortestQueueB
 		b.requestCounter = make(map[url.URL]int)
 		b.highWatermark = make(map[url.URL]int)
 	}
-	for _, u := range balancees {
-		var purl, _ = url.Parse(u)
-		b.keys = append(b.keys, purl)
-		b.balancees[purl] = 0
+	for index := range balancees {
+		b.keys = append(b.keys, &balancees[index])
+		b.balancees[&balancees[index]] = 0
 	}
 
 	b.next = next
@@ -117,8 +116,7 @@ func (b *JoinShortestQueueBalancer) ServeHTTP(w http.ResponseWriter, req *http.R
 		return
 	}
 	if len(b.keys) == 0 {
-		w.WriteHeader(502)
-		fmt.Fprint(w, "jsq has no balancees. no backend server available to fulfill this request.")
+		http.Error(w, "jsq has no balancees. no backend server available to fulfill this request.", http.StatusBadGateway)
 		return
 		//return 502
 	}

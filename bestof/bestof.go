@@ -87,7 +87,7 @@ func (b *ChoiceOfBalancer) nextServer() (*url.URL, error) {
 }
 
 //NewChoiceOfBalancer gives a new ChoiceOfBalancer back
-func NewChoiceOfBalancer(balancees []string, options ChoiceOfBalancerOptions, next http.Handler) *ChoiceOfBalancer {
+func NewChoiceOfBalancer(balancees []url.URL, options ChoiceOfBalancerOptions, next http.Handler) *ChoiceOfBalancer {
 	var b = ChoiceOfBalancer{
 		lock: &sync.Mutex{},
 	}
@@ -96,11 +96,11 @@ func NewChoiceOfBalancer(balancees []string, options ChoiceOfBalancerOptions, ne
 		b.requestCounter = make(map[url.URL]int)
 		b.highWatermark = make(map[url.URL]int)
 	}
-	for _, u := range balancees {
-		var purl, _ = url.Parse(u)
-		b.keys = append(b.keys, purl)
-		b.balancees[purl] = 0
+	for index := range balancees {
+		b.keys = append(b.keys, &balancees[index])
+		b.balancees[&balancees[index]] = 0
 	}
+
 	if options.RandomGenerator == nil {
 		b.randomGenerator = &util.GoRandom{}
 	} else {
@@ -169,8 +169,7 @@ func (b *ChoiceOfBalancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if len(b.keys) == 0 {
-		w.WriteHeader(502)
-		fmt.Fprint(w, "bestofnlb has no balancees. no backend server available to fulfill this request.")
+		http.Error(w, "bestofnlb has no balancees. no backend server available to fulfill this request.", http.StatusBadGateway)
 		return
 		//return 502
 	}

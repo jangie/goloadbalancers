@@ -45,17 +45,16 @@ func (b *RandomBalancer) nextServer() (*url.URL, error) {
 }
 
 //NewRandomBalancer gives a new ChoiceOfBalancer back
-func NewRandomBalancer(balancees []string, options RandomBalancerOptions, next http.Handler) *RandomBalancer {
-	var b = RandomBalancer{}
+func NewRandomBalancer(balancees []url.URL, options RandomBalancerOptions, next http.Handler) *RandomBalancer {
+	var b = RandomBalancer{lock: &sync.Mutex{}}
 	b.balancees = make([]*url.URL, len(balancees))
 	if options.IsTesting {
 		b.isTesting = true
 		b.requestCounter = make(map[url.URL]int)
 	}
 
-	for index, u := range balancees {
-		var purl, _ = url.Parse(u)
-		b.balancees[index] = purl
+	for index := range balancees {
+		b.balancees[index] = &balancees[index]
 	}
 	if options.RandomGenerator == nil {
 		b.randomGenerator = &util.GoRandom{}
@@ -86,8 +85,7 @@ func (b *RandomBalancer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if len(b.balancees) == 0 {
-		w.WriteHeader(502)
-		fmt.Fprint(w, "randomlb has no balancees. no backend server available to fulfill this request.")
+		http.Error(w, "randomlb has no balancees. no backend server available to fulfill this request.", http.StatusBadGateway)
 		return
 		//return 502
 	}

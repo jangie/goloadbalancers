@@ -29,7 +29,7 @@ func (t *testHarness) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func getBestOfHarness(balancees []string, fwd http.Handler) *testHarness {
+func getBestOfHarness(balancees []url.URL, fwd http.Handler) *testHarness {
 	var bal = bestof.NewChoiceOfBalancer(
 		balancees,
 		bestof.ChoiceOfBalancerOptions{
@@ -37,70 +37,68 @@ func getBestOfHarness(balancees []string, fwd http.Handler) *testHarness {
 		},
 		fwd,
 	)
-	var tbestof = testHarness{
+	return &testHarness{
 		next: bal,
 		port: 8090,
 	}
-	return &tbestof
 }
 
-func getRandomHarness(balancees []string, fwd http.Handler) *testHarness {
+func getRandomHarness(balancees []url.URL, fwd http.Handler) *testHarness {
 	var random = random.NewRandomBalancer(balancees,
 		random.RandomBalancerOptions{
 			RandomGenerator: util.GoRandom{},
 		},
 		fwd,
 	)
-	var trandom = testHarness{
+	return &testHarness{
 		next: random,
 		port: 8091,
 	}
-	return &trandom
 }
 
-func getRoundRobinHarness(balancees []string, fwd http.Handler) *testHarness {
+func getRoundRobinHarness(balancees []url.URL, fwd http.Handler) *testHarness {
 	var rr, _ = roundrobin.New(fwd)
+	for _, u := range balancees {
+		rr.UpsertServer(&u)
+	}
 	var trr = testHarness{
 		next: rr,
 		port: 8095,
 	}
-	for _, u := range balancees {
-		var purl, _ = url.Parse(u)
-		rr.UpsertServer(purl)
-	}
 	return &trr
 }
 
-func getDynamicRoundRobinHarness(balancees []string, fwd http.Handler) *testHarness {
+func getDynamicRoundRobinHarness(balancees []url.URL, fwd http.Handler) *testHarness {
 	var rr, _ = roundrobin.New(fwd)
 	rebalancer, _ := roundrobin.NewRebalancer(rr)
 	for _, u := range balancees {
-		var purl, _ = url.Parse(u)
-		rr.UpsertServer(purl, roundrobin.Weight(5))
+		rr.UpsertServer(&u, roundrobin.Weight(5))
 	}
-	var tdrr = testHarness{
+	return &testHarness{
 		next: rebalancer,
 		port: 8096,
 	}
-	return &tdrr
 }
 
-func getJSQHarness(balancees []string, fwd http.Handler) *testHarness {
+func getJSQHarness(balancees []url.URL, fwd http.Handler) *testHarness {
 	var jsq = jsq.NewJoinShortestQueueBalancer(balancees,
 		jsq.JoinShortestQueueBalancerOptions{},
 		fwd,
 	)
-	var tjsq = testHarness{
+	return &testHarness{
 		next: jsq,
 		port: 8092,
 	}
-	return &tjsq
 }
 
 func main() {
 	var fwd, _ = forward.New()
-	var balancees = []string{"http://testa:8080", "http://testb:8080", "http://testc:8080"}
-
+	var balanceesStrings = []string{"http://testa:8080", "http://testb:8080", "http://testc:8080"}
+	var balancees = []url.URL{}
+	for _, u := range balanceesStrings {
+		var purl, _ = url.Parse(u)
+		balancees = append(balancees, *purl)
+	}
 	//serve stats for profiling
 	go http.ListenAndServe(":8100", http.DefaultServeMux)
 

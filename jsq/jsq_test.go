@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+var urlA, _ = url.Parse("http://a")
+var urlB, _ = url.Parse("http://b")
+var urlC, _ = url.Parse("http://c")
+
 type testHTTPResponseWriter struct {
 	lock         *sync.Mutex
 	timesWritten int
@@ -76,19 +80,19 @@ func (t *testRequestThrottler) releaseRequest() {
 
 func TestJSQImplements(t *testing.T) {
 	var handler http.Handler
-	handler = NewJoinShortestQueueBalancer([]string{}, JoinShortestQueueBalancerOptions{}, nil)
+	handler = NewJoinShortestQueueBalancer([]url.URL{}, JoinShortestQueueBalancerOptions{}, nil)
 	handler.ServeHTTP(nil, nil)
 }
 
 func TestJSQDefaults(t *testing.T) {
-	var handler = NewJoinShortestQueueBalancer([]string{}, JoinShortestQueueBalancerOptions{}, nil)
+	var handler = NewJoinShortestQueueBalancer([]url.URL{}, JoinShortestQueueBalancerOptions{}, nil)
 	if handler.isTesting {
 		t.Fatalf("Should not default to testing mode")
 	}
 }
 
 func TestJSQBehavior(t *testing.T) {
-	var handler = NewJoinShortestQueueBalancer([]string{"http://a", "http://b", "http://c"}, JoinShortestQueueBalancerOptions{
+	var handler = NewJoinShortestQueueBalancer([]url.URL{*urlA, *urlB, *urlC}, JoinShortestQueueBalancerOptions{
 		IsTesting: true,
 	}, nil)
 
